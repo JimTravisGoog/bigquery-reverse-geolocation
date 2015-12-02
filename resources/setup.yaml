@@ -1,0 +1,16 @@
+
+env:
+# Change to your project ID
+    PROJECT_ID: 'your project ID'
+# Change to  datasetid
+    DATASET_ID: 'Your-BQ-Dataset'
+# Change to tableid
+    TABLE_ID: 'Your-BQ-Table'
+# Change this to your pubsub topic
+    PUBSUB_TOPIC: 'your-project-topic'
+# Change the following to your rootdir
+    ROOTDIR: 'Folder-where-data-read-from'
+# Change the following to your pull subscription    
+    SUBSCRIPTION: 'your-project-subscription'
+# Change to your Google Maps API Key, see https://developers.google.com/maps/web-services/
+    MAPS_API_KEY: 'YOUR-MAPS-API-KEY'
