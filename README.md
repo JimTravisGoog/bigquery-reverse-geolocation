@@ -17,6 +17,7 @@ Conversion notes (using libgdc version 59):
 ### TODO:
  Fix numbering in this README
  Sort out image sizing 
+ Sort out formating
 
 
 # Adding geographic context to your streaming data with Google’s Pubsub and Maps APIs
@@ -538,7 +539,7 @@ When finished ctrl-c to stop the local browser
 
 If you are using this repo as the basis for building out your own application
 reading the section below on getting your web page set  provides detailed
-guidance. go to the section on cleanang up when you’ve completed the tutorial
+guidance. go to the section on cleaning up when you’ve completed the tutorial
 
 ## Getting your web page set up
 
