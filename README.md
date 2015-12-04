@@ -241,7 +241,8 @@ you edited earlier
 <pre class=prettyprint>
 $ docker run -e
 "GOOGLE_APPLICATION_CREDENTIALS=/tmp/creds/your-credentials-file.json"  --name
-map-push -v /tmp/creds:/tmp/creds my/map-pushapp
+map-push -v /tmp/creds:/tmp/creds gcr.io/cloud-solutions-images/map-pushapp
+
 </pre>
 
 You should see it start to push data into pub/sub 
@@ -273,7 +274,8 @@ geo- encodes it and writes it to the BigQuery dataset you created earlier
 <pre class=prettyprint>
 $ docker run -e
 "GOOGLE_APPLICATION_CREDENTIALS=/tmp/creds/your-credentials-file.json"  --name
-map-app -v /tmp/creds:/tmp/creds my/fullmap-appv2
+map-app -v /tmp/creds:/tmp/creds gcr.io/cloud-solutions-images/map-pullapp
+
 </pre>
 
 ![pub/sub sub](images/geo_bq_pull-5.png "pub/sub pull")
