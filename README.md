@@ -19,6 +19,15 @@ Conversion notes (using libgdc version 59):
  Sort out image sizing 
  Sort out formating
 
+ <table>
+ <tr>
+    <td class="tab5"></td>
+    <td class="tab6"><strong>NOTE: </strong>For internal review/ testing purposes the csv files used are stored here : https://storage.googleapis.com/gmweb1436173097/data/
+   </td>
+ </tr>
+</table>
+
+
 
 # Adding geographic context to your streaming data with Google’s Pubsub and Maps APIs
 
@@ -536,6 +545,9 @@ a pre requsiste</td>
 Then  from your browser browse to the file [http://localhost:8000/bqapi.html](http://localhost:8000/bqapi.html)
 
 Draw a rectangle over an area to see a heat map to to indicate journey density.
+
+![Heat map](images/visual-map.png "Heat map")
+
 
 When finished ctrl-c to stop the local browser
 
