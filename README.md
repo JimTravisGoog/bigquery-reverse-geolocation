@@ -13,12 +13,6 @@ Conversion notes (using libgdc version 59):
   .tab6 {background-color:#efefef;}
 </style>
 
-
-### TODO:
- Fix numbering in this README
- Sort out image sizing 
- Sort out formating
-
  <table>
  <tr>
     <td class="tab5"></td>
@@ -150,7 +144,7 @@ installed the gcloud SDK to using the following command
 
 
 <pre class=prettyprint>
-$gsutil cp your-credentials-file.json gs://your-bucket
+$ gsutil cp your-credentials-file.json gs://your-bucket
 </pre>
 
 Quick deploy
@@ -162,23 +156,20 @@ Note : It is assumed that you  have familiarity with git , are able to open &
 edit  text files and  run some simple bash scripts . No familiarity with python
 is necessary if following these quick steps
 
-  1. First create your pub/sub topic by navigating to the pub/sub console from the [Google Developer Console](https://console.developers.google.com/project)
-   Click on New Topic add the name of your topic  so the topic entry looks like
-this :
+1.First create your pub/sub topic by navigating to the pub/sub console from the [Google Developer Console](https://console.developers.google.com/project) Click on New Topic add the name of your topic  so the topic entry looks like this :
 
   ![pub/sub topic](images/geo_bq-topic-2.png "pub/sub topic")
  
-  2. Now create the subscription by checking the box alongside the topic  and
-clicking the “+ new subscription button” Ensure it is set to pull
+2.Now create the subscription by checking the box alongside the topic  and clicking the “+ new subscription button” Ensure it is set to pull
 
  ![pub/sub sub](images/geo_bq-subs-3.png "pub/sub sub")
 
 
  Note the name of the topic and subscription 
 
-  3. From the Developers console start a [cloudshell instance](https://cloud.google.com/cloud-shell/docs/quickstart)
-  4. ssh into the instance
-  5. Create a shell script called setup  with the following contents:
+3.From the Developers console start a [cloudshell instance](https://cloud.google.com/cloud-shell/docs/quickstart)
+4.ssh into the instance
+5.Create a shell script called setup  with the following contents:
 
 
 <pre class=prettyprint>
@@ -201,7 +192,7 @@ http//storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip1000.csv
 
 This script creates a BigQuery dataset and also downloads some test data
 
-  6 . Set the setup bash script to be executable and run it 
+6.Set the setup bash script to be executable and run it 
 
 
 <pre class=prettyprint>
@@ -209,7 +200,7 @@ $chmod +x setup.sh
 $  ./setup.sh
 </pre>
 
-  7. change your working directory to /tmp/creds and create a file called setup.yaml
+7.change your working directory to /tmp/creds and create a file called setup.yaml
 with the following contents, editing to reflect your project ID and adding your
 Maps API key you created earlier
 
@@ -233,7 +224,7 @@ https://developers.google.com/maps/web-services/
     MAPS_API_KEY: 'Your-server-key'
 </pre>
 
-  8. copy the credentials file from the storage bucket  into /tmp/creds 
+8.copy the credentials file from the storage bucket  into /tmp/creds 
 
 
 <pre class=prettyprint>
@@ -242,7 +233,7 @@ $gsutil cp gs://your-bucket/your-credentials-file.json .
 
  
 
-  9. Create and run the  Docker instance that processes the test data by geo
+9.Create and run the  Docker instance that processes the test data by geo
 encoding it  and publishing to the pub/sub topic defined in the setup.yaml file
 you edited earlier
 
@@ -274,10 +265,8 @@ sandiego_freeway_gps_trips/Mobile-GPS-Trip10.csv.&lt;/Details>&lt;/Error>youruse
 </table>
 
 
-  10. create and run the Docker instance that pulls the data out of pub/sub reverse
+10.create and run the Docker instance that pulls the data out of pub/sub reverse
 geo- encodes it and writes it to the BigQuery dataset you created earlier
-
-
 
 
 <pre class=prettyprint>
@@ -289,8 +278,7 @@ map-app -v /tmp/creds:/tmp/creds gcr.io/cloud-solutions-images/map-pullapp
 
 ![pub/sub sub](images/geo_bq_pull-5.png "pub/sub pull")
 
-
-  11.  Now you can start analysing the data to get some interesting insights into the
+11.Now you can start analysing the data to get some interesting insights into the
 data. Skip to the analysing data section ( skip the step by step deployment
 section) 
 
@@ -308,9 +296,9 @@ instructions. Python version needs to be 2.7 </td>
  </tr>
 </table>
 
-  1. First clone this repository to a local folder on your laptop or on a GCE
+1.First clone this repository to a local folder on your laptop or on a GCE
 instance
-  2. Next you need to get hold of the example data . We are using  data from the [Sandiego freeway public dataset](http://catalog.data.gov/dataset/intelligent-transportation-systems-research-data-exchange-san-diego-freeway-data-daily) . Register and you can freely download some example datasets or you can
+2.Next you need to get hold of the example data . We are using  data from the [Sandiego freeway public dataset](http://catalog.data.gov/dataset/intelligent-transportation-systems-research-data-exchange-san-diego-freeway-data-daily) . Register and you can freely download some example datasets or you can
 download a smaller subset  as indicated here
 
 
@@ -327,28 +315,26 @@ http://storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip1000.csv
 
 These files contain real GPS vehicle journey data from San Diego freeways.
 
-See this file for copyright info:
 
-[http://storage.googleapis.com/sandiego_freeway_gps_trips/o/docs%2Flicense%20and%20copyright(san%20diego).txt](http://storage.googleapis.com/sandiego_freeway_gps_trips/o/docs%2Flicense%20and%20copyright(san%20diego).txt)
+[See this file for copyright info:](http://storage.googleapis.com/sandiego_freeway_gps_trips/o/docs%2Flicense%20and%20copyright(san%20diego).txt)
 
-  3. Copy the csv files into an empty  folder of your choice on your laptop or on a
+3.Copy the csv files into an empty  folder of your choice on your laptop or on a
 GCE instance
-  4. You can get a bigger sample set for a   more realistic demo from [here](http://catalog.data.gov/dataset/intelligent-transportation-systems-research-data-exchange-san-diego-freeway-data-daily) .If you decide to do this then ensure you copy the csv files into the folder
+4.You can get a bigger sample set for a   more realistic demo from [here](http://catalog.data.gov/dataset/intelligent-transportation-systems-research-data-exchange-san-diego-freeway-data-daily) .If you decide to do this then ensure you copy the csv files into the folder
 defined by the ROOTDIR in the setup.yaml file
-  5. Create your pub/sub topic by navigating to the pub/sub console from the [Google Developer Console](https://console.developers.google.com/project)
-     1. Click on New Topic add the name of your topic  so the topic entry looks like
+5.Create your pub/sub topic by navigating to the pub/sub console from the [Google Developer Console](https://console.developers.google.com/project)
+i. Click on New Topic add the name of your topic  so the topic entry looks like
 this :
 
  ![pub/sub topic](images/geo_bq-topic-2.png "pub/sub topic")
 
-     2. Now create the subscription by checking the box alongside the topic  and
-clicking the “+ new subscription button” Ensure it is set to pull
+ii. Now create the subscription by checking the box alongside the topic  and clicking the “+ new subscription button” Ensure it is set to pull
 
  ![pub/sub sub](images/geo_bq-subs-3.png "pub/sub sub")
 
-     3. Note the name of the topic and subscription 
-  6. change location  to the folder where you cloned the repository 
-  7. Now run the python script to populate the pub/sub topic using the following
+iii. Note the name of the topic and subscription 
+6. change location  to the folder where you cloned the repository 
+7.Now run the python script to populate the pub/sub topic using the following
 command:
 
 
@@ -364,7 +350,7 @@ that the script is pointing to the correct location for the  setup.yaml file</td
  </tr>
 </table>
 
-  8. Create an empty Big Query dataset using the following command:  
+8.Create an empty Big Query dataset using the following command:  
 
 
 <pre class=prettyprint>
@@ -377,22 +363,22 @@ on successful creation you will see a message similar to the following:
 
 <em>Dataset 'Your-Project_ID:sandiego_freeways' successfully created.</em>
 
-  9. Next create a table  with the following schema 
+9.Next create a table  with the following schema 
 
  ![BQ schema](images/geo_bq-schema-6.png "BQ schema")
 
 
-  10. You can do this by passing the json schema file you downloaded when cloning the
+10.You can do this by passing the json schema file you downloaded when cloning the
 git repository  to the bq mk command as below ( or manually via the console):
 
 
 <pre class=prettyprint>
-$ bkmk --schema geocoded_journeys.json sandiego_freeways.geocode_journeys
+$ bq mk --schema geocoded_journeys.json sandiego_freeways.geocode_journeys
 </pre>
 
  
 
-  11. Update the setup.yaml file with the following details
+11.Update the setup.yaml file with the following details
 
 <table>
  <tr>
@@ -430,7 +416,7 @@ https://developers.google.com/maps/web-services</td>
  </tr>
 </table>
 
-  12. Now run the python script to process the messages  in pub/sub topic using the
+12.Now run the python script to process the messages  in pub/sub topic using the
 following to run the python script : 
 
 
@@ -439,24 +425,28 @@ $python config_geo_pubsub_pull.py
 </pre>
 
 
-<pre class=prettyprint>
-Note: if setup.yaml is not in the same folder as your script then either move
-it there or edit the script to reflect it’s location
-</pre>
+<table>
+ <tr>
+    <td class="tab5"></td>
+    <td class="tab6"><strong>NOTE: </strong>if setup.yaml is not in the same folder as your script then either move
+it there or edit the script to reflect it’s location </td>
+ </tr>
+</table>
 
-  13. The script moves messages from the pub/sub queue, reverse geocodes them
+The script moves messages from the pub/sub queue, reverse geocodes them
 (converts latitude & longitude to a street address), calculates the elevation
 above sea level, and converts from UTC time to local time by querying which
 timezone the locations fall in. It then writes the data plus this added
 geographic context to the BigQuery table you created earlier
-  14.  Now you can start analysing the data to get some interesting insights into the
+
+Now you can start analysing the data to get some interesting insights into the
 data.
 
 Analysing the data
 
-  1. From the Cloud console navigate to the BigQuery link on the left hand side
-  2. Open the <strong>[BigQuery web UI](https://bigquery.cloud.google.com/)</strong>.
-  3. View the table schema . Under your project name, expand the sandigeo_freeways
+  1.From the Cloud console navigate to the BigQuery link on the left hand side
+  2.Open the <strong>[BigQuery web UI](https://bigquery.cloud.google.com/)</strong>.
+  3.View the table schema . Under your project name, expand the sandigeo_freeways
 dataset and then click <strong>geocode_journeys</strong>
 
 The following figure shows the table schema for the  table. 
@@ -464,9 +454,9 @@ The following figure shows the table schema for the  table.
  ![BQ schema](images/geo_bq-schema-6.png "BQ schema")
 
 
-4. In the BigQuery web UI, click <strong>Compose Query</strong>. 
+4.In the BigQuery web UI, click <strong>Compose Query</strong>. 
 
-5. Try entering  some of the following queries  in the new query text box :
+5.Try entering  some of the following queries  in the new query text box :
 
 Average speed by Zipcode
 
@@ -500,13 +490,24 @@ ORDER BY Speed DESC
 As part of this repo we have provided some sample code to allow you to
 visualise data stored in BigQuery on a Google Map.
 
-  1. Download the file bqapi.html  which can be found in the web folder of this repo
-. if you followed the step by step deployment and cloned the repo then you will
-have a local copy on the machine you are using to follow this through.
-  2. Make  amendments to some variables  namely clientID, ProjectID . If you changed
+
+<strong>NOTE:</strong/> For simplicity, this example shows how to visualise the data using OAuth 2.0 to authenticate the user against the BigQuery service. However, applications that require sign in or are not freely accessible to everyone are not permitted by the Google Maps API [terms of use](https://developers.google.com/maps/terms?hl=en) without obtaining a Maps for Work license. It’s important to emphasise that this is not the only way to share your BigQuery data on a Google Map, and there are options that do not require a Maps for Work license. You could export the query results from BigQuery and create a static map layer that doesn’t require the user to authenticate, or you could set up authentication via a service account so the end user doesn’t have to be signed in with their credentials to access the map. For more details on Maps API pricing and plans see the [online documentation](https://developers.google.com/maps/pricing-and-plans/).
+
+
+1.Download the file bqapi.html  which can be found in the web folder of this repo
+
+<table>
+ <tr>
+    <td class="tab5"></td>
+    <td class="tab6"><strong>NOTE: </strong>if you followed the step by step deployment and cloned the repo then you will
+have a local copy on the machine you are using to follow this through </td>
+ </tr>
+</table>
+
+2.Make  amendments to some variables  namely clientID, ProjectID . If you changed
 the name  of your dataset and table name  then replace those values as well.
 You also need to add in your maps api browser key where indicated
-
+ 
 
 <pre class=prettyprint>
 &lt;script
@@ -522,7 +523,7 @@ var datasetId = 'sandiego_freeways';
 var table_name = 'geocoded_journeys';
 </pre>
 
-     4.  Once you have replaced the variables  start python’s simple HTTP
+3. Once you have replaced the variables  start python’s simple HTTP
 server from the folder where the bqapi.html  file is 
 
 
@@ -547,7 +548,6 @@ Then  from your browser browse to the file [http://localhost:8000/bqapi.html](ht
 Draw a rectangle over an area to see a heat map to to indicate journey density.
 
 ![Heat map](images/visual-map.png "Heat map")
-
 
 When finished ctrl-c to stop the local browser
 
