@@ -76,6 +76,9 @@ order:
 
 Sign up for a Google Cloud Platform account if you do not already have one
 
+Sign up for a Maps API key if you do not have one (maps for Work customers can use their client ID). 
+You will need a [server key](https://developers.google.com/maps/documentation/geocoding/get-api-key) to use the Geocoding, Elevation and Timezone APIs. You will need a [browser key](https://developers.google.com/maps/documentation/javascript/) to use the Javascript Maps API to visualise your data
+
 Create a new project in the [Google Developer Console](https://console.developers.google.com/project) and note the new project's ID.
 
 In the [APIs & Auth section of the Google Developers Console](https://console.developers.google.com/project/_/apiui/api) of your new project, enable the following APIs:
