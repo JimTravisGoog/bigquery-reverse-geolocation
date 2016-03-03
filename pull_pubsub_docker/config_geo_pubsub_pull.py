@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -203,8 +203,15 @@ def main(argv):
                         #Addresses can contain non-ascii characters, for simplicity we'll replace non ascii characters
                         #This is just for command line output
                         addr = row['Address'].encode('ascii', 'replace')
-                        msg = "Appended one row to BigQuery. Address: {0}".format(addr)
+                        msg = "Appended one row to BigQuery."
                         print msg
+                        msg = "Address: {0}".format(addr)
+                        print msg
+                        msg = "Elevation: {0} metres".format(row["Elevation"])
+                        print msg
+                        msg = "Timezone: {0}".format(timezone["timeZoneId"])
+                        print msg
+                        print " "
                     else:
                         time.sleep(wait_timeout)
                         geocode_counter = 0
