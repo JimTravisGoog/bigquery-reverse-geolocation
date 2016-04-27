@@ -29,6 +29,8 @@ import time
 import datetime
 import uuid
 import json
+import signal
+import sys
 # from oauth2client.client import GoogleCredentials
 from oauth2client import client as oauth2client
 
@@ -38,6 +40,15 @@ with open("/tmp/creds/setup.yaml", 'r') as  varfile:
 # default; set to your traffic topic. Can override on command line.
 TRAFFIC_TOPIC = cfg["env"]["PUBSUB_TOPIC"]
 PUBSUB_SCOPES = ['https://www.googleapis.com/auth/pubsub']
+running_proc = True
+
+def signal_term_handler(signal, frame):
+    global running_proc
+    print "Exiting application"
+    running_proc = False
+    sys.exit(0)
+ 
+
 
 def create_pubsub_client(http=None):
     credentials = oauth2client.GoogleCredentials.get_application_default()
@@ -134,8 +145,10 @@ def main(argv):
         # the timeout.
         'returnImmediately': False,
         'maxMessages': batch_size,
-    }
-    while True:
+    }    
+   
+    signal.signal(signal.SIGINT, signal_term_handler)
+    while running_proc:
         #pull messages from Pubsub
         resp = client.projects().subscriptions().pull(
             subscription=subscription, body=body).execute()
@@ -227,6 +240,7 @@ def main(argv):
             client.projects().subscriptions().acknowledge(
                 subscription=subscription, body=ack_body).execute()
 
+                
 
 if __name__ == '__main__':
             main(sys.argv)
