@@ -22,7 +22,6 @@ Conversion notes (using libgdc version 59):
 </table>
 
 
-
 # Adding geographic context to your streaming data with Google’s Pubsub and Maps APIs
 
 In this tutorial you will deploy an application that processes messages in a
@@ -35,9 +34,7 @@ as described in the [Maps API & Google cloud getting started solution paper](htt
 You will use Google Compute engine, pub/sub and BigQuery to deploy the
 application . The solution will resemble this diagram when you’re done
 
-
 ![architecture diagrams](images/geo_bq-arch.png "Architecture diagram")
-
 
 ## <strong>Very Important Things</strong>
 
