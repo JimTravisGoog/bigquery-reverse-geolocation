@@ -55,7 +55,7 @@ from dateutil.parser import parse
 import httplib2
 from oauth2client import client as oauth2client
 
-with open("/tmp/creds/setup.yaml", 'r') as  varfile:
+with open("setup.yaml", 'r') as  varfile:
     cfg = yaml.load(varfile)
 
 # default; set to your traffic topic. Can override on command line.
@@ -123,7 +123,7 @@ def main(argv):
             #San Diego data file names include trip ID, use this to identify each journey
             name_ext = file.split(".")
             vehicleID = name_ext[0][15:]
-            
+
             myfile = os.path.join(subdir,file)
             print myfile
             line_count = 0
