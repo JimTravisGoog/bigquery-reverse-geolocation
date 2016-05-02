@@ -13,28 +13,25 @@ Conversion notes (using libgdc version 59):
   .tab6 {background-color:#efefef;}
 </style>
 
- <table>
- <tr>
-    <td class="tab5"></td>
-    <td class="tab6"><strong>NOTE: </strong>For internal review/ testing purposes the csv files used are stored here : https://storage.googleapis.com/gmweb1436173097/data/
-   </td>
- </tr>
-</table>
 
 
 # Adding geographic context to your streaming data with Google’s Pubsub and Maps APIs
 
-In this tutorial you will deploy an application that processes messages in a
-pub/sub queue reverse geocodes them (converts latitude & longitude to a street
-address), calculates the elevation above sea level, and converts from UTC time
-to local time by querying which timezone the locations fall in. It then writes
-the data plus this added geographic context to  a BigQuery  for you to analyse
-as described in the [Maps API & Google cloud getting started solution paper](https://docs.google.com/a/google.com/document/d/1j4lxVUfypjIF7J8vS-HiKcnDYdC0d7uuR6P02vgufCI/edit?usp=sharing)
+This example code  will allow you  to use Google Cloud Platform to build an app that receives telemetric data about geolocation, processes it, and then stores the processed and transformed data for further analysis. 
 
-You will use Google Compute engine, pub/sub and BigQuery to deploy the
-application . The solution will resemble this diagram when you’re done
+Runs on [Google Compute Engine](https://cloud.google.com/compute/docs).
+Processes messages in a Google Cloud Pub/Sub queue.
+Reverse geocodes latitude & longitude to convert the coordinates to a street address.
+Calculates the elevation above sea level.
+Converts from  Coordinated Universal Time (UTC) to local time by querying which timezone each location is in. 
+Writes the data with the added geographic context to a BigQuery dataset for your analysis.
 
-![architecture diagrams](images/geo_bq-arch.png "Architecture diagram")
+This tutorial which can be found <<here>>  discusses how this example is constructed .  The solution paper <<link here>>  discusses the concepts behind the example. 
+
+It includes and uses data from [San Diego, CA, freeways public dataset](http://catalog.data.gov/dataset/intelligent-transportation-systems-research-data-exchange-san-diego-freeway-data-daily) . This data was captured from actual automobile journeys, recorded by using road sensors. You can [register for an account](https://www.its-rde.net/showdf?https://www.its-rde.net/showds?dataEnvironmentNumber=10012) to have access to the full dataset if you want to run your own experiments with further data.
+
+
+![architecture diagrams](images/geo_bq-arch.png " Architecture diagram")
 
 ## <strong>Very Important Things</strong>
 
@@ -50,6 +47,23 @@ the deploy sections below). Also be sure to complete the <Delete the
 Deployment> section when you're done. It's super quick and will tear down
 everything you created.
 
+## <strong>Costs</strong>
+This example uses billable components of Google Cloud Platform, including:  
+
+* 1 Compute Engine virtual machines (g1-small) ( note this is an optinal component as you 
+* Google Cloud Storage Standard (5 GB)
+* Google BigQuery (5 GB storage, 5 GB streaming inserts)
+* Google Cloud Pub/Sub (< 200k operations)
+* Google Maps API  
+
+The cost of running this tutorial will vary depending on run time. Use the [pricing calculator estimate](https://cloud.google.com/products/calculator/#id=11387bdd-be66-4083-b814-01176faa20a0) to see a cost estimate based on your projected usage. New Cloud Platform users may be eligible for a free trial.
+
+The Maps API standard plan offers a free quota and pay-as-you-go billing after the quota has been exceeded. You can purchase a Maps API Premium Plan for higher quotas.  If you have an existing license for the Maps API or have a Maps APIs Premium Plan, [see the documentation first](https://developers.google.com/maps/documentation/javascript/get-api-key#premium-auth) for some important notes.
+
+You must have a Maps for Work license for any application that restricts access, such as behind a firewall or on a corporate intranet. For more details about Google Maps API pricing and plans, see the [online documentation](https://developers.google.com/maps/pricing-and-plans/).
+
+
+
 ## <strong>Conventions</strong>
 
 The instructions in this tutorial assume you have access to a terminal on a
@@ -64,45 +78,103 @@ that follows it):
 $echo “this is a Sample command” 
 </pre>
 
-## <strong>Deploy</strong>
+## <strong>Before you begin</strong>
 
-### <strong>Deployment Requirements</strong>
+### <strong>Cloud platform project set up</strong>
 
 Before you deploy the sample you'll need to make sure a few things are in
 order:
 
-Sign up for a Google Cloud Platform account if you do not already have one
+[Select or create a Cloud Platform Console project.](https://console.cloud.google.com/project)  
 
-Sign up for a Maps API key if you do not have one (maps for Work customers can use their client ID). 
-You will need a [server key](https://developers.google.com/maps/documentation/geocoding/get-api-key) to use the Geocoding, Elevation and Timezone APIs. You will need a [browser key](https://developers.google.com/maps/documentation/javascript/) to use the Javascript Maps API to visualise your data
+[Enable billing for your project.](https://console.cloud.google.com/billing)  
 
-Create a new project in the [Google Developer Console](https://console.developers.google.com/project) and note the new project's ID.
+[Install the Cloud SDK](https://cloud-dot-devsite.googleplex.com/sdk/).  
 
-In the [APIs & Auth section of the Google Developers Console](https://console.developers.google.com/project/_/apiui/api) of your new project, enable the following APIs:
+Authenticate gcloud with Google Cloud Platform:
 
-     * BigQuery API
-     * Pubsub API
-     * Google Cloud Storage
-     * Google Maps Geocoding API
-     * Google Maps Elevation API
-     * Google Maps Timezone API
 
-Once you've enabled the APIs, you need to generate a key to use with the maps
-API  click <strong>Credentials</strong> from the left navigation of the Developer Console.
+``$ gcloud init``
 
-From  the "<strong>API Credentials</strong> " <strong>Add credentials</strong> drop down select  <strong> API</strong> <strong>Key</strong>.
+Click the following link to enable the required Cloud Platform APIs. If prompted, be sure to select the project you created in step 1.
 
-Choose <strong>Server Key</strong>.  
+[Enable APIs](https://console.developers.google.com/start/api?target=%22console%22&id=bigquery,pubsub,storage_component,storage_api,geocoding_backend,elevation_backend,timezone_backend,maps_backend)
 
-If you'd like to restrict requests to a specific IP address, do so now.
+These APIs include:
 
-Click <strong>Create</strong>.
+* BigQuery API
+* Pubsub API
+* Google Cloud Storage
+* Google Maps Geocoding API
+* Google Maps Elevation API
+* Google Maps Time Zone API
+* Google Maps Javascript API
 
-Your API key should be 40 characters long, and begin with AIza.
 
-You  will  also need to create a [credentials file](https://support.google.com/cloud/answer/6158849?hl=en#serviceaccounts)  from the <strong>“API credentials”  Add credentials </strong>drop down select <strong>service account </strong>, keep the default JSON format 
 
-Click <strong>Create</strong> and save the file somewhere safely  
+### <strong>Creating Credentials</strong>
+
+For this tutorial, you'll need the following credentials:
+
+* A Google Maps API server key.
+* A Maps API browser key.
+* A credentials file for service account key.
+* An OAuth 2.0 client ID.
+
+##### Google Maps API credentials
+If you don't already have them, you'll need Google Maps API keys. 
+
+
+###### Get a server key
+
+Click the following link to open the Cloud Console in the Credentials page. If you have more than one project, you might be prompted to select a project. 
+
+[ Create credentials](https://console.developers.google.com/project/_/apis/credentials?target=%22console%22)
+
+ 2. Click **Create credentials** and then select **API key**. 
+ 3. Click **Server key**. 
+ 4. Name the key "Maps tutorial server key". 
+ 5. Click **Create**. 
+ 6. Click **Ok** to dismiss the dialog box that shows you the new key. You can retrieve your keys from the Cloud Console anytime. 
+ 7. Stay on the page.
+
+###### Get a browser key
+The browser key is a requirement for using the Maps Javascript API. Follow these steps:
+
+1. Click Create credentials and then select API key.
+1. Click Browser key.
+1. Name the key "Maps tutorial browser key".
+1. Click Create.
+1. Click Ok to dismiss the dialog box that shows you the new key.
+1. Stay on the page.
+
+
+<table>
+ <tr>
+    <td class="tab0"></td>
+    <td class="tab1"><strong>IMPORTANT: </strong>Keep your API keys secure. Publicly exposing your credentials can result in your account being compromised, which could lead to unexpected charges on your account. To keep your API keys secure, follow these [best practices](https://support.google.com/cloud/answer/6310037).</td>
+ </tr>
+</table>
+
+##### Service account credentials
+
+
+Create service account credentials and download the JSON file. Follow these steps:
+
+1. Click **Create credentials** and then select **Service account key**.
+1. Select **New service account**.
+1. Name the account "Maps tutorial service account".
+1. The key type is **JSON**.
+1. Click **Create**.
+1. The Cloud Console automatically downloads to your computer the JSON file that contains the service account key.
+1. Click **Close** to dismiss the dialog box that shows you the new key. If you need to, you can retrieve the key file later.
+
+<table>
+ <tr>
+    <td class="tab5"></td>
+    <td class="tab6"><strong>NOTE: </strong>You will need this file if you decide to use Docker to run the example. For more details read the README included in the Docker folder of this repository if you wish to use Docker </td>
+ </tr>
+</table>
 
 <table>
  <tr>
@@ -111,178 +183,79 @@ Click <strong>Create</strong> and save the file somewhere safely
  </tr>
 </table>
 
-Install  the cloud SDK to your workstation use  [these instructions](https://cloud.google.com/sdk/).
+##### OAuth 2.0 client ID
+Create a client ID that you can use to authenticate end-user requests to BigQuery. Follow these steps:
 
-Authenticate to gcloud:
-
-
-```
-$ gcloud auth login
-```
-Set your project:
+Open the Cloud Console to the [Credentials page](https://console.developers.google.com/project/_/apis/credentials?target=%22console%22).
 
 
-```
-$ gcloud config set project YOUR_PROJECT_ID
-```
-If you are using Windows to complete the tutorial, install [Cygwin](http://cygwin.com/) and execute the steps in a terminal.
+1. Click Create credentials and then select **OAuth client ID**.
+1. Select **Web application**.
+1. In the **Name** field, enter "Maps API client ID".
+1. In the Restrictions section, in** Authorized JavaScript origins**, add the following two origin URLs:
 
-Create a storage bucket 
+http://localhost:8000
+https://localhost:8000
 
+Adding these URLs enables an end user to access BigQuery data through JavaScript running in a browser. You need this authorization for an upcoming section of the tutorial, when you display a visualization of data on a map in your web browser.
+	
 <table>
  <tr>
     <td class="tab2"></td>
-    <td class="tab3"><strong>WARNING: </strong>This bucket will be used to store the credential file that you created earlier
-so Do NOT make this a publically accessible bucket by changing any of the
-default settings</td>
+    <td class="tab3"><strong>WARNING: </strong>This setting allows anyone running a local web server to access your BigQuery data. It's important that you delete the localhost:8000 restrictions when you finish the tutorial. Deleting these restrictions makes your data more secure and might save you from being billed for additional costs.
+</td>
  </tr>
 </table>
 
-Copy the credential file you created earlier to your newly created bucket  you
-can use the console  or  use the gsutil command from the machine you have
-installed the gcloud SDK to using the following command
+ 5.Click Save to generate the new client ID.
 
 
-<pre class=prettyprint>
-$ gsutil cp your-credentials-file.json gs://your-bucket
-</pre>
 
-Quick deploy
+## <strong>Setting up Cloud Pub/Sub</strong>
 
-These Quick deploy instructions using Docker  are the easiest way to get
-started
+Cloud Pub/Sub is the messaging queue that handles moving the data from CSV files to BigQuery. You'll need to create a topic, which publishes the messages, and a subscription, which receives the published messages. 
 
-Note : It is assumed that you  have familiarity with git , are able to open &
-edit  text files and  run some simple bash scripts . No familiarity with python
-is necessary if following these quick steps
+#### Create a Cloud Pub/Sub topic
 
-1.First create your pub/sub topic by navigating to the pub/sub console from the [Google Developer Console](https://console.developers.google.com/project) Click on New Topic add the name of your topic  so the topic entry looks like this :
+The topic publishes the messages. Follow these steps to create the topic:
 
-  ![pub/sub topic](images/geo_bq-topic-2.png "pub/sub topic")
- 
-2.Now create the subscription by checking the box alongside the topic  and clicking the “+ new subscription button” Ensure it is set to pull
+Browse to the Pub/Sub topic list page in the Cloud Console:
+
+[Open the Pub/Sub page](https://console.developers.google.com/project/_/cloudpubsub/topicList)
+
+1. Click **Create topic**. A dialog box opens.
+1. In the **Name** field, add "traffic" to the end of the path that is provided for you. The path is determined by the system. You can provide only a name for the topic.
+
+
+![pub/sub topic](images/geo_bq-topic-2.png "pub/sub topic")
+
+3.Click Create. The dialog box closes.  
+
+Keep the Cloud Console open on this page; you'll use it in the next section.
+
+#### Creating a Cloud Pub/Sub subscription
+
+The subscription receives the published messages. Follow these steps to create the subscription:
+
+1. In the topic list, in the row that contains the traffic topic, click the down arrow on the right-hand end of the row.
+1. Click **New subscription** to open the **Create a new subscription** page.  
+1. In the **Subscription name** field, add "mysubscription" to the end of the path that is provided for you.
+
 
  ![pub/sub sub](images/geo_bq-subs-3.png "pub/sub sub")
 
+4.This is a pull subscription. Set the **Delivery Type** to **Pull**, if it isn't already set by default. 
 
- Note the name of the topic and subscription 
+5.Click **Create**.
 
-3.From the Developers console start a [cloudshell instance](https://cloud.google.com/cloud-shell/docs/quickstart)
-4.ssh into the instance
-5.Create a shell script called setup  with the following contents:
+## <strong>Next Steps</strong>
 
-
-<pre class=prettyprint>
-# setup.sh
-apt-get install -y unzip
-mkdir /tmp/creds
-bq mk sandiego_freeways
-bq mk --schema geocoded_journeys.json sandiego_freeways.geocoded_journeys
-mkdir /tmp/creds/data
-cd /tmp/creds/data
-curl -O
-http://storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip1.csv
-curl -O
-http://storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip10.csv
-curl -O
-http://storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip100.csv
-curl -O
-http//storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip1000.csv
-</pre>
-
-This script creates a BigQuery dataset and also downloads some test data
-
-6.Set the setup bash script to be executable and run it 
+If you want to use Docker then please refer to the README included in the Docker folder of this repository to follow through from this point onwards for instructions on setting up and running the example using Docker. If you wish to run the example on a Compute Engine instance or via CloudShell continue onto the Deployment instructions (Step by step) below 
 
 
-<pre class=prettyprint>
-$chmod +x setup.sh
-$  ./setup.sh
-</pre>
-
-7.change your working directory to /tmp/creds and create a file called setup.yaml
-with the following contents, editing to reflect your project ID and adding your
-Maps API key you created earlier
 
 
-<pre class=prettyprint>
-env:
-# Change to your project ID
-    PROJECT_ID: 'your-project-id'
-# Change to  datasetid
-    DATASET_ID: 'sandiego_freeways'
-# Change to tableid
-    TABLE_ID: 'geocoded_journeys'
-# Change this to your pubsub topic
-    PUBSUB_TOPIC: 'projects/your-project-id/topics/traffic'
-# Change the following to your rootdir
-    ROOTDIR: '/tmp/creds/data'
-# Change the following to your pull subscription
-    SUBSCRIPTION: 'projects/your-project-id/subscriptions/mysubscription'
-# Change to your Google Maps API Key, see
-https://developers.google.com/maps/web-services/
-    MAPS_API_KEY: 'Your-server-key'
-</pre>
-
-8.copy the credentials file from the storage bucket  into /tmp/creds 
-
-
-<pre class=prettyprint>
-$gsutil cp gs://your-bucket/your-credentials-file.json . 
-</pre>
-
- 
-
-9.Create and run the  Docker instance that processes the test data by geo
-encoding it  and publishing to the pub/sub topic defined in the setup.yaml file
-you edited earlier
-
-
-<pre class=prettyprint>
-$ docker run -e
-"GOOGLE_APPLICATION_CREDENTIALS=/tmp/creds/your-credentials-file.json"  --name
-map-push -v /tmp/creds:/tmp/creds gcr.io/cloud-solutions-images/map-pushapp
-
-</pre>
-
-You should see it start to push data into pub/sub 
-
-![pub/sub push](images/geo_bq-push-4.png "pub/sub push")
-
-<table>
- <tr>
-    <td class="tab4"></td>
-    <td class="tab3"><strong>WARNING: </strong>If you do not see  any lines being processed check that you have successfully
-copied the data files  open one to check that you have not got an error written
-to the file that looks like this: This is a permission error 
-<pre class=prettyprint>
-&lt;?xml version='1.0'
-encoding='UTF-8'?>&lt;Error>&lt;Code>AccessDenied&lt;/Code>&lt;Message>Access
-denied.&lt;/Message>&lt;Details>Anonymous callers do not have
-storage.objects.get access to object
-sandiego_freeway_gps_trips/Mobile-GPS-Trip10.csv.&lt;/Details>&lt;/Error>yourusername@Project-id-here:/tmp/creds/data</td>
- </tr>
-</table>
-
-
-10.create and run the Docker instance that pulls the data out of pub/sub reverse
-geo- encodes it and writes it to the BigQuery dataset you created earlier
-
-
-<pre class=prettyprint>
-$ docker run -e
-"GOOGLE_APPLICATION_CREDENTIALS=/tmp/creds/your-credentials-file.json"  --name
-map-app -v /tmp/creds:/tmp/creds gcr.io/cloud-solutions-images/map-pullapp
-
-</pre>
-
-![pub/sub sub](images/geo_bq_pull-5.png "pub/sub pull")
-
-11.Now you can start analysing the data to get some interesting insights into the
-data. Skip to the analysing data section ( skip the step by step deployment
-section) 
-
-### Deployment instructions (step by step)
+## Deployment instructions (step by step)
 
 This step by step deployment instructions are the best starting point if you
 wish to  take the source code and modify for your specific  use case
@@ -297,32 +270,19 @@ instructions. Python version needs to be 2.7 </td>
 </table>
 
 1.First clone this repository to a local folder on your laptop or on a GCE
-instance
-2.Next you need to get hold of the example data . We are using  data from the [Sandiego freeway public dataset](http://catalog.data.gov/dataset/intelligent-transportation-systems-research-data-exchange-san-diego-freeway-data-daily) . Register and you can freely download some example datasets or you can
-download a smaller subset  as indicated here
+instance  
 
-
-<pre class=prettyprint>
-curl -O
-http://storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip1.csv
-curl -O
-http://storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip10.csv
-curl -O
-http://storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip100.csv
-curl -O
-http://storage.googleapis.com/sandiego_freeway_gps_trips/Mobile-GPS-Trip1000.csv
-</pre>
-
-These files contain real GPS vehicle journey data from San Diego freeways.
+2.A small sample set of data files that contain real GPS vehicle journey data from San Diego freeway can be found in the resources/data folder of this repository
 
 
 [See this file for copyright info:](http://storage.googleapis.com/sandiego_freeway_gps_trips/o/docs%2Flicense%20and%20copyright(san%20diego).txt)
+ 
 
-3.Copy the csv files into an empty  folder of your choice on your laptop or on a
-GCE instance
-4.You can get a bigger sample set for a   more realistic demo from [here](http://catalog.data.gov/dataset/intelligent-transportation-systems-research-data-exchange-san-diego-freeway-data-daily) .If you decide to do this then ensure you copy the csv files into the folder
-defined by the ROOTDIR in the setup.yaml file
-5.Create your pub/sub topic by navigating to the pub/sub console from the [Google Developer Console](https://console.developers.google.com/project)
+4.You can get a bigger sample set for a  more realistic demo from [here](http://catalog.data.gov/dataset/intelligent-transportation-systems-research-data-exchange-san-diego-freeway-data-daily) .If you decide to do this then ensure you copy the csv files into the folder
+defined by the ROOTDIR in the setup.yaml file  
+
+5.Create your pub/sub topic by navigating to the pub/sub console from the [Google Developer Console](https://console.developers.google.com/project)  
+
 i. Click on New Topic add the name of your topic  so the topic entry looks like
 this :
 
@@ -442,7 +402,7 @@ geographic context to the BigQuery table you created earlier
 Now you can start analysing the data to get some interesting insights into the
 data.
 
-Analysing the data
+## Analysing the data
 
   1.From the Cloud console navigate to the BigQuery link on the left hand side
   2.Open the <strong>[BigQuery web UI](https://bigquery.cloud.google.com/)</strong>.
@@ -633,7 +593,7 @@ function loadApi(){
 ```
 ### Simple SQL query to get data for a rectangular area
 
-The simplest way to display BigQuery data on a map is to request all rows where
+The simplest way to display BigQuery data on a map is to request all rows where  
 the latitude and longitude fall within a rectangle, using a less than and
 greater than comparison. This could be the current map view or a shape drawn on
 the map. To use a shape drawn by the user, you will need to handle the drawing
@@ -813,3 +773,4 @@ The Google Maps Web Service APIs may only be used in conjunction with a Google
 map; geocoding results without displaying them on a map is prohibited. For
 complete details on allowed usage, consult the [Maps API Terms of Service License Restrictions](https://developers.google.com/maps/terms#section_10).
 
+I
