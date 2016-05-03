@@ -1,5 +1,5 @@
 <!--
-Conversion notes 02 (using libgdc version 59):
+Conversion notes (using libgdc version 59):
 -->
 
 <!-- generated styles -->
@@ -98,7 +98,6 @@ Note the name of the topic and subscription
 
 3.Create a shell script called setup  with the following contents:  
 
-
 <pre class=prettyprint>
 # setup.sh
 mkdir /tmp/creds
@@ -110,7 +109,6 @@ cp resources/setup.yaml /tmp/creds/
 </pre>
 
 This script will create a BigQuery dataset,copy the test data into /tmp/creds/data and a template setup.yaml file into /tmp/creds
-
    
 4.Set the setup bash script to be executable and run it 
 
