@@ -99,7 +99,6 @@ Note the name of the topic and subscription
 3.Create a shell script called setup  with the following contents:  
 
 
-
 <pre class=prettyprint>
 # setup.sh
 mkdir /tmp/creds
