@@ -1,5 +1,5 @@
 <!--
-Conversion notes (using libgdc version 59):
+Conversion notes 01 (using libgdc version 59):
 -->
 
 <!-- generated styles -->
@@ -22,7 +22,7 @@ The instructions in this README assumes you have already carried out the pre-req
 
 
 
-## Credentials file for use with  Docker
+## Credentials file for use with  Docker 
 
 If you have been following the main README file you should have created a credentials file . These instructions are recreated here for your convenience
 ##### Service account credentials
