@@ -101,7 +101,7 @@ Note the name of the topic and subscription
 3.In the resources folder there is a  shell script called setup.sh with the following contents:  
 
 
-<pre class=prettyprint>
+```
 # setup.sh
 mkdir /tmp/creds
 bq mk sandiego_freeways
@@ -109,7 +109,7 @@ bq mk --schema geocoded_journeys.json sandiego_freeways.geocoded_journeys
 mkdir /tmp/creds/data
 cp resources/data/* /tmp/creds/data/
 cp resources/setup.yaml /tmp/creds/
-</pre>
+```
 
 This script will create a BigQuery dataset, copy the test data into /tmp/creds/data and copy a template setup.yaml file into /tmp/creds
 
@@ -117,16 +117,16 @@ This script will create a BigQuery dataset, copy the test data into /tmp/creds/d
 4.Set the setup bash script to be executable and run it 
 
 
-<pre class=prettyprint>
-$chmod +x setup.sh
+
+```$chmod +x setup.sh
 $  ./setup.sh
-</pre>
+```
 
 5.change your working directory to /tmp/creds and edit the setup.yaml file
 It has the following contents, 
 
 
-<pre class=prettyprint>
+```
 env:
 # Change to your project ID
     PROJECT_ID: 'your-project-id'
@@ -143,7 +143,7 @@ env:
 # Change to your Google Maps API Key, see
 https://developers.google.com/maps/web-services/
     MAPS_API_KEY: 'Your-server-key'
-</pre>
+```
 
 Edit  to reflect your project ID and adding your
 Maps API key you created earlier
@@ -151,9 +151,9 @@ Maps API key you created earlier
 6.copy the credentials file from the storage bucket  into /tmp/creds 
 
 
-<pre class=prettyprint>
+```
 $gsutil cp gs://your-bucket/your-credentials-file.json . 
-</pre>
+```
 
  
 
@@ -162,12 +162,12 @@ encoding it  and publishing to the pub/sub topic defined in the setup.yaml file
 you edited earlier
 
 
-<pre class=prettyprint>
+```
 $ docker run -e
 "GOOGLE_APPLICATION_CREDENTIALS=/tmp/creds/your-credentials-file.json"  --name
 map-push -v /tmp/creds:/tmp/creds gcr.io/cloud-solutions-images/map-pushapp
 
-</pre>
+```
 
 You should see it start to push data into pub/sub 
 
@@ -178,12 +178,12 @@ You should see it start to push data into pub/sub
 geo- encodes it and writes it to the BigQuery dataset you created earlier
 
 
-<pre class=prettyprint>
+```
 $ docker run -e
 "GOOGLE_APPLICATION_CREDENTIALS=/tmp/creds/your-credentials-file.json"  --name
 map-app -v /tmp/creds:/tmp/creds gcr.io/cloud-solutions-images/map-pullapp
 
-</pre>
+```
 
 You should start seeing repeated output like below as the data is being pulled out of Pub/Sub and added to your BigQuery table
 ![pub/sub sub](images/geo_bq_pull-5.png "pub/sub pull")
