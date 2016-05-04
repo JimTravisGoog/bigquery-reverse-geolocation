@@ -58,9 +58,9 @@ If you  intend to run Docker on your laptop skip to the next section. If you are
 
 1. Create a storage bucket using the gsutil command 
 
-<pre class=prettyprint>
+```
 $ gsutil mb -p your-project gs://your-bucket
-</pre>
+```
 
 
 <table>
@@ -78,9 +78,9 @@ installed the gcloud SDK to using the following command
 
 
 
-<pre class=prettyprint>
+```
 $ gsutil cp your-credentials-file.json gs://your-bucket
-</pre>  
+``` 
  
   
 ##Setting up and running the example  
