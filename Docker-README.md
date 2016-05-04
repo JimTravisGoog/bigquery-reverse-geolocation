@@ -1,5 +1,5 @@
 <!--
-Conversion notes 03 (using libgdc version 59):
+Conversion notes (using libgdc version 59):
 -->
 
 <!-- generated styles -->
@@ -22,7 +22,7 @@ The instructions in this README assumes you have already carried out the pre-req
 
 
 
-## Credentials file for use with  Docker 
+## Credentials file for use with  Docker
 
 If you have been following the main README file you should have created a credentials file . These instructions are recreated here for your convenience
 ##### Service account credentials
@@ -49,7 +49,7 @@ Create service account credentials and download the JSON file. Follow these step
 <table>
  <tr>
     <td class="tab0"></td>
-    <td class="tab1"><strong>IMPORTANT: </strong>It is important that you keep this file  safe and do NOT share it publically.</td>
+    <td class="tab1"><strong>IMPORTANT: </strong>It is important that you keep this file safe and do NOT share it publically.</td>
  </tr>
 </table>
 
@@ -77,12 +77,14 @@ installed the gcloud SDK to using the following command
 
 
 
+
 <pre class=prettyprint>
 $ gsutil cp your-credentials-file.json gs://your-bucket
 </pre>  
  
   
-## Setting up and running the example  
+##Setting up and running the example  
+
 
 No familiarity with python
 is necessary if following these quick steps
@@ -96,7 +98,7 @@ Note the name of the topic and subscription
 
 3.Clone this repository to your instance
 
-3.Create a shell script called setup  with the following contents:  
+3.In the resources folder there is a  shell script called setup.sh with the following contents:  
 
 
 <pre class=prettyprint>
@@ -109,7 +111,7 @@ cp resources/data/* /tmp/creds/data/
 cp resources/setup.yaml /tmp/creds/
 </pre>
 
-This script will create a BigQuery dataset,copy the test data into /tmp/creds/data and a template setup.yaml file into /tmp/creds
+This script will create a BigQuery dataset, copy the test data into /tmp/creds/data and copy a template setup.yaml file into /tmp/creds
 
    
 4.Set the setup bash script to be executable and run it 
@@ -120,9 +122,8 @@ $chmod +x setup.sh
 $  ./setup.sh
 </pre>
 
-5.change your working directory to /tmp/creds and create a file called setup.yaml
-with the following contents, editing to reflect your project ID and adding your
-Maps API key you created earlier
+5.change your working directory to /tmp/creds and edit the setup.yaml file
+It has the following contents, 
 
 
 <pre class=prettyprint>
@@ -143,6 +144,9 @@ env:
 https://developers.google.com/maps/web-services/
     MAPS_API_KEY: 'Your-server-key'
 </pre>
+
+Edit  to reflect your project ID and adding your
+Maps API key you created earlier
 
 6.copy the credentials file from the storage bucket  into /tmp/creds 
 
@@ -169,20 +173,6 @@ You should see it start to push data into pub/sub
 
 ![pub/sub push](images/geo_bq-push-4.png "pub/sub push")
 
-<table>
- <tr>
-    <td class="tab4"></td>
-    <td class="tab3"><strong>WARNING: </strong>If you do not see  any lines being processed check that you have successfully
-copied the data files  open one to check that you have not got an error written
-to the file that looks like this: This is a permission error 
-<pre class=prettyprint>
-&lt;?xml version='1.0'
-encoding='UTF-8'?>&lt;Error>&lt;Code>AccessDenied&lt;/Code>&lt;Message>Access
-denied.&lt;/Message>&lt;Details>Anonymous callers do not have
-storage.objects.get access to object
-sandiego_freeway_gps_trips/Mobile-GPS-Trip10.csv.&lt;/Details>&lt;/Error>yourusername@Project-id-here:/tmp/creds/data</td>
- </tr>
-</table>
 
 8.create and run the Docker instance that pulls the data out of pub/sub reverse
 geo- encodes it and writes it to the BigQuery dataset you created earlier
@@ -203,6 +193,7 @@ It can take some to pull all the data from the topic. When it's done, the termin
 
 9.Now you can start analysing the data to get some interesting insights into the
 data
+ 
 
 Go back to the main README file and continue from the **Analysing the data section**
 
