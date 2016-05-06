@@ -118,8 +118,10 @@ This script will create a BigQuery dataset, copy the test data into /tmp/creds/d
 
 
 
-```$chmod +x setup.sh
+```
+$ chmod +x setup.sh
 $  ./setup.sh
+
 ```
 
 5.change your working directory to /tmp/creds and edit the setup.yaml file
