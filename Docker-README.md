@@ -1,5 +1,5 @@
 <!--
-Conversion notes (using libgdc version 59):
+Conversion notes (using libgdc version 59) :
 -->
 
 <!-- generated styles -->
