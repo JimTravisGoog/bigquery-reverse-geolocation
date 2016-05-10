@@ -9,7 +9,7 @@ env:
 # Change this to your pubsub topic
     PUBSUB_TOPIC: 'projects/your-project-id/topics/traffic'
 # Change the following to your rootdir
-    ROOTDIR: '/tmp/SanDiego'
+    ROOTDIR: '/tmp/creds/data'
 # Change the following to your pull subscription    
     SUBSCRIPTION: 'projects/your-project-id/subscriptions/mysubscription'
 # Change to your Google Maps API Key, see https://developers.google.com/maps/web-services/
