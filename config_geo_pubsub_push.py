@@ -55,7 +55,7 @@ from dateutil.parser import parse
 import httplib2
 from oauth2client import client as oauth2client
 
-with open("setup.yaml", 'r') as  varfile:
+with open("resources/setup.yaml", 'r') as  varfile:
     cfg = yaml.load(varfile)
 
 # default; set to your traffic topic. Can override on command line.
