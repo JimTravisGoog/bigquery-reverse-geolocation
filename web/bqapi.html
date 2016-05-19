@@ -15,12 +15,11 @@ html, body, #map-canvas {
 <!-- Google Client API for Javascript-->
 <script src="https://apis.google.com/js/client.js"></script>
 <!-- Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?libraries=visualization,drawing&key=AIzaSyATdUzJcrEMz-3G7VWLuRUVPyLkn1eHr7g"
+<script src="https://maps.googleapis.com/maps/api/js?libraries=visualization,drawing&key=Your-Maps-API-Key"
         ></script>
 <script type="text/javascript">
 //auth
-var clientId = 'Your-Client_ID follow instructions : https://cloud.google.com/bigquery/authentication#clientsecrets';
-var scopes = 'https://www.googleapis.com/auth/bigquery';
+var clientId = 'Your-Client-ID';
 var projectId = 'Your-Project-ID';
 var datasetId = 'sandiego_freeways';
 var table_name = 'geocoded_journeys';
@@ -31,7 +30,6 @@ var heatmap = null;
 var map, drawingManager;
 var zoomLevel = 11;
 var centerLatLng = new google.maps.LatLng(32.682, -117.09);
-var distanceUnit = 6371; //for haversine formula
 var currentShape = null;
 var recordLimit = 10000; //just to stop loading too much data into the browser by accident
 
