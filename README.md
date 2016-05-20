@@ -1,6 +1,7 @@
 <!--
 
 -->
+
 This tutorial shows how to use Google Cloud Platform to build an app that
 receives telemetric data about geolocation, processes it, and then stores the
 processed and transformed data for further analysis. 
@@ -63,11 +64,11 @@ about Google Maps API pricing and plans, see [the online documentation](https://
   3. Click the following link to enable the required Cloud Platform APIs. If
 prompted, be sure to select the project you created in step 1.
 
-	[Enable APIs](https://console.developers.google.com/start/api?target=%22console%22&id=bigquery,pubsub,storage_component,storage_api,geocoding_backend,elevation_backend,timezone_backend,maps_backend)
+  [Enable APIs](https://console.developers.google.com/start/api?target=%22console%22&id=bigquery,pubsub,storage_component,storage_api,geocoding_backend,elevation_backend,timezone_backend,maps_backend)
 
- 	
+  
 
-	These APIs include:
+  These APIs include:
 
      * BigQuery API
      * Pubsub API
@@ -170,7 +171,7 @@ address of your computer.
 http://[YOUR_IP_ADDRESS]:8000
 https://[YOUR_IP_ADDRESS]:8000
 ```
-	Adding these URLs enables an end user to access BigQuery data through
+  Adding these URLs enables an end user to access BigQuery data through
 JavaScript running in a browser. You need this authorization for an upcoming
 section of the tutorial, when you display a visualization of data on a map in
 your web browser.
@@ -216,7 +217,7 @@ click the <strong>Activate Google Cloud Shell</strong> icon.
   2. In Cloud Shell, clone this repository.
   3. Change directory to <code>resources</code>:
 
-	<code>cd geo\_bq/resources</code>
+  <code>cd geo\_bq/resources</code>
 
   1.  Edit <code>setup.yaml</code>. Use your favorite command-line text editor. 
 
@@ -249,7 +250,7 @@ uploaded to your bucket) and the traffic data.
 
   1. Change directory to <code>/tmp/creds</code>:
 
-	<code>cd /tmp/creds</code>
+  <code>cd /tmp/creds</code>
 
   1. Copy your credentials file. Run the following command. Replace [YOUR\_BUCKET]
 with the name of your Cloud Storage bucket and [YOUR\_CREDENTIALS\_FILE] with
@@ -309,6 +310,7 @@ BigQuery to gain insights. This section of the tutorial shows you how to use
 the BigQuery console run a few simple queries against this data.
 
   1. Open the [BigQuery Console](https://bigquery.cloud.google.com/queries/).
+  2. Select the <strong>sandiego\_freeways</strong> database.
   1. Click the <strong>Compose Query</strong> button.
   2. In the <strong>New Query</strong> text box, enter the following query that produces average speed by zip code:
 
@@ -342,20 +344,20 @@ earlier. You can see these values in the Cloud Console on the <strong>[Credentia
   1. Make a copy of the file named <code>bqapi.html</code>. You can find the file in the following directory where you installed the
 source code:
 
-		
+    
 
 
 ```
 geo_bq/web/
 ```
   2. Open the file in a text editor.
-  3. In the <code>script</code> element, in the <code>src</code> attribute, replace the value of the <code>key</code> parameter with your Google Maps API browser key:
+  3. In the following <code>script</code> element, in the <code>src</code> attribute, replace <code>Your-Maps-API-Key</code> with your Google Maps API browser key:
 
 
 ```
-&lt;script src="<a href="https://maps.googleapis.com/maps/api/js?libraries=visualization,drawing&key=Your-Maps-Api_browser-key">https://maps.googleapis.com/maps/api/js?libraries=visualization,drawing&key=Your-Maps-Api_browser-key</a>"
+&lt;script src="<a href="https://maps.googleapis.com/maps/api/js?libraries=visualization,drawing&key=Your-Maps-Api_browser-key">https://maps.googleapis.com/maps/api/js?libraries=visualization,drawing&key=</a>Your-Maps-API-Key"
 ```
-  1. For the <code>clientId </code>variable, replace the value string with the[ OAuth 2.0 client ID](https://docs.google.com/document/d/1AwDrzSgIgzEFj1Se5q3CsPKups8UTgKzPv4jNc3z0ic/edit#heading=h.cbxggavwji9j) you created earlier.  
+  1. For the <code>clientId </code>variable, replace Your-Client-ID with the[ OAuth 2.0 client ID](https://docs.google.com/document/d/1AwDrzSgIgzEFj1Se5q3CsPKups8UTgKzPv4jNc3z0ic/edit#heading=h.cbxggavwji9j) you created earlier.  
   2. For the projectId variable, replace the value string, <code>Your-Project-ID</code>, with the your project ID.
   3. Save the file.
 
@@ -365,17 +367,17 @@ You can use Cloud Shell to view the web page. Follow these steps:
 
   1. From the <code>geo\_bq/web</code> directory, run the following command to start the server:
 
-	python -m SimpleHTTPServer 8080
+  python -m SimpleHTTPServer 8080
 
-	When the server is running, Cloud Shell prints the following message:
+  When the server is running, Cloud Shell prints the following message:
 
-	<code>Serving HTTP on 0.0.0.0 port 8080 ...</code>
+  <code>Serving HTTP on 0.0.0.0 port 8080 ...</code>
 
   1. In the top-left corner of Cloud Shell, click <strong>Web preview</strong> and then click <strong>Preview on port 8080</strong>. Cloud Shell opens a new browser tab that connects to the web server.
   2. In the new browser tab, note the origin URL. The origin URL has a format
 similar to the following example, where [RANDOM\_NUMBER] could be any value:
 
-	<u>https://8080-dot-[RANDOM\_NUMBER]-dot-devshell.appspot.com</u>
+  <u>https://8080-dot-[RANDOM\_NUMBER]-dot-devshell.appspot.com</u>
 
   1. In the Cloud Console, return to the <strong>[Credentials](https://console.developers.google.com/apis/credentials)</strong> page;
 
@@ -383,7 +385,7 @@ similar to the following example, where [RANDOM\_NUMBER] could be any value:
   2. In the <strong>Restrictions</strong> section, add the origin URL you noted in the previous step. Do not add a port
 number.
 
-	The origin URL that you provide in this step tells OAuth 2.0 that it's safe to
+  The origin URL that you provide in this step tells OAuth 2.0 that it's safe to
 accept requests from the Cloud Shell browser. Without this step, the web page
 can't use script to access the data you loaded into BigQuery.
 
@@ -394,7 +396,8 @@ have to repeat this flow in this session if, for example, you reload the web
 page.
   6. After the map has loaded, select the rectangle tool in the upper-left corner of
 the map.
-  7. Use the tool to draw a rectangle around the entire land mass on the map.
+  7. Use the tool to draw a rectangle around the entire currently visible land mass
+on the map.
 
 The page shows a heat map. Exactly where the heat map regions display on the
 map depends on the data you loaded into BigQuery.
