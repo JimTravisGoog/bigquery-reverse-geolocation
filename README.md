@@ -1,5 +1,6 @@
 <!--
 
+
 -->
 
 This tutorial shows how to use Google Cloud Platform to build an app that
