@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
- This script reverse geocodes mesages pulled from a pub/sub queue (converts latitude & longitude to a street address), 
- calculates the elevation above sea level, 
- and converts from UTC time to local time by querying which timezone the locations fall in 
+ This script reverse geocodes mesages pulled from a pub/sub queue (converts latitude & longitude to a street address),
+ calculates the elevation above sea level,
+ and converts from UTC time to local time by querying which timezone the locations fall in
  It then writes the data plus this added geographic context to the BigQuery table
 """
 import sys
@@ -47,7 +47,7 @@ def signal_term_handler(signal, frame):
     print "Exiting application"
     running_proc = False
     sys.exit(0)
- 
+
 
 
 def create_pubsub_client(http=None):
@@ -77,8 +77,8 @@ def stream_row_to_bigquery(bigquery, row,
         datasetId=cfg["env"]["DATASET_ID"],
         tableId=cfg["env"]["TABLE_ID"],
         body=insert_all_data).execute(num_retries=num_retries)
-    
-#Use Maps API Geocoding service to convert lat,lng into a human readable address    
+
+#Use Maps API Geocoding service to convert lat,lng into a human readable address
 def reverse_geocode(gmaps, latitude, longitude):
     return gmaps.reverse_geocode((latitude, longitude))
 
@@ -88,7 +88,7 @@ def extract_address(list, property):
     if(list[0] is not None):
         address = list[0][property]
     return address
-    
+
 #extract a structured address component e.g. postal_code from a Geocoding API response
 def extract_component(list, property):
     val = ""
@@ -99,7 +99,7 @@ def extract_component(list, property):
                 break
     return val
 
-#calculate elevation using Google Maps Elevation API  
+#calculate elevation using Google Maps Elevation API
 def get_elevation(gmaps, latitude, longitude):
     elevation = gmaps.elevation((latitude, longitude))
     elevation_metres = None
@@ -110,7 +110,7 @@ def get_elevation(gmaps, latitude, longitude):
 #get the timezone including any DST offset for the time the GPS position was recorded
 def get_timezone(gmaps, latitude, longitude, posix_time):
     return gmaps.timezone((latitude, longitude), timestamp=posix_time)
-    
+
 def get_local_time(timezone_response):
     # get offset from UTC
     rawOffset = float(timezone_response["rawOffset"])
@@ -145,8 +145,8 @@ def main(argv):
         # the timeout.
         'returnImmediately': False,
         'maxMessages': batch_size,
-    }    
-   
+    }
+
     signal.signal(signal.SIGINT, signal_term_handler)
     while running_proc:
         #pull messages from Pubsub
@@ -158,12 +158,13 @@ def main(argv):
 
         if received_messages is not None:
             ack_ids = []
+            bq = create_bigquery_client()
             for received_message in received_messages:
                 pubsub_message = received_message.get('message')
                 if pubsub_message:
                     # Process messages
                     msg = base64.b64decode(str(pubsub_message.get('data')))
-                    
+
                     #we stored time as a message attribute
                     ts = pubsub_message["attributes"]["timestamp"]
 
@@ -187,13 +188,13 @@ def main(argv):
 
                         #Reverse Geocode the latitude, longitude to get street address, city, region etc
                         address_list = reverse_geocode(gmaps, latitude, longitude)
-                        
+
                         #Save the formatted address for insert into BigQuery
                         if(len(address_list) > 0):
                             row["Address"] = extract_address(address_list, "formatted_address")
                             #extract the zip or postal code if one is returned
                             row["Zipcode"] = extract_component(address_list, "postal_code")
-                                               
+
                         #increment counter - in case you want to limit daily geocodes.
                         geocode_counter += 1
 
@@ -202,17 +203,16 @@ def main(argv):
 
                         # get the timezone, pass in original timestamp in case DST applied at that time
                         timezone = get_timezone(gmaps, latitude, longitude, posix_time)
-                        
+
                         #Store DST offset so can display/query UTC time as local time
                         if(timezone["rawOffset"] is not None):
                             row["Offset"] = get_local_time(timezone)
-                            
+
                         row["UTCTime"] = ts
-                        
+
                         # save a row to BigQuery
-                        bq = create_bigquery_client()
                         result = stream_row_to_bigquery(bq, row)
-                        
+
                         #Addresses can contain non-ascii characters, for simplicity we'll replace non ascii characters
                         #This is just for command line output
                         addr = row['Address'].encode('ascii', 'replace')
@@ -229,7 +229,7 @@ def main(argv):
                         time.sleep(wait_timeout)
                         geocode_counter = 0
                         print "counter reset"
-                    
+
                     # Get the message's ack ID
                     ack_ids.append(received_message.get('ackId'))
 
@@ -240,7 +240,7 @@ def main(argv):
             client.projects().subscriptions().acknowledge(
                 subscription=subscription, body=ack_body).execute()
 
-                
+
 
 if __name__ == '__main__':
             main(sys.argv)

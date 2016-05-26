@@ -158,6 +158,7 @@ def main(argv):
 
         if received_messages is not None:
             ack_ids = []
+            bq = create_bigquery_client()
             for received_message in received_messages:
                 pubsub_message = received_message.get('message')
                 if pubsub_message:
@@ -210,7 +211,6 @@ def main(argv):
                         row["UTCTime"] = ts
 
                         # save a row to BigQuery
-                        bq = create_bigquery_client()
                         result = stream_row_to_bigquery(bq, row)
 
                         #Addresses can contain non-ascii characters, for simplicity we'll replace non ascii characters
