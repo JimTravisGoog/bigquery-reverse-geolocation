@@ -120,6 +120,7 @@ def get_local_time(timezone_response):
     # combine for total offset from UTC
     return rawOffset + dstOffset
 
+# [START maininit]
 def main(argv):
 
     client = create_pubsub_client()
@@ -133,7 +134,8 @@ def main(argv):
 
     # option to wait for some time until daily quotas are reset
     wait_timeout = 2
-
+# [END maininit]    
+# [START createmaps]
     #create a Google Maps API client
     gmaps = googlemaps.Client(key=cfg["env"]["MAPS_API_KEY"])
     subscription = cfg["env"]["SUBSCRIPTION"]
@@ -146,14 +148,16 @@ def main(argv):
         'returnImmediately': False,
         'maxMessages': batch_size,
     }
-
+# [END createmaps]
     signal.signal(signal.SIGINT, signal_term_handler)
+    #[START pullmsgs]
     while running_proc:
         #pull messages from Pubsub
         resp = client.projects().subscriptions().pull(
             subscription=subscription, body=body).execute()
 
         received_messages = resp.get('receivedMessages')
+    # [END pullmsgs]
 
 
         if received_messages is not None:
@@ -175,7 +179,7 @@ def main(argv):
                     #our messages are in a comma-separated string.
                     #Split into a list
                     data_list = msg.split(",")
-
+                    #[START extract]
                     #extract latitude,longitude for input into Google Maps API calls
                     latitude = float(data_list[1])
                     longitude = float(data_list[2])
@@ -188,7 +192,7 @@ def main(argv):
 
                         #Reverse Geocode the latitude, longitude to get street address, city, region etc
                         address_list = reverse_geocode(gmaps, latitude, longitude)
-
+                    # [END extract]
                         #Save the formatted address for insert into BigQuery
                         if(len(address_list) > 0):
                             row["Address"] = extract_address(address_list, "formatted_address")
@@ -209,9 +213,10 @@ def main(argv):
                             row["Offset"] = get_local_time(timezone)
 
                         row["UTCTime"] = ts
-
+                        # [START saverow]
                         # save a row to BigQuery
                         result = stream_row_to_bigquery(bq, row)
+                        # [END saverow]
 
                         #Addresses can contain non-ascii characters, for simplicity we'll replace non ascii characters
                         #This is just for command line output
