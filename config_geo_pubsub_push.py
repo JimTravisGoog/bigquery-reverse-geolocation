@@ -64,7 +64,7 @@ PUBSUB_SCOPES = ['https://www.googleapis.com/auth/pubsub']
 NUM_RETRIES = 3
 ROOTDIR = cfg["env"]["ROOTDIR"]
 
-
+# [START createclient]
 def create_pubsub_client(http=None):
     credentials = oauth2client.GoogleCredentials.get_application_default()
     if credentials.create_scoped_required():
@@ -73,8 +73,9 @@ def create_pubsub_client(http=None):
         http = httplib2.Http()
     credentials.authorize(http)
     return discovery.build('pubsub', 'v1', http=http)
+# [END createclient]
 
-
+# [START publish]
 def publish(client, pubsub_topic, data_line, msg_attributes=None):
     """Publish to the given pubsub topic."""
     data = base64.b64encode(data_line)
@@ -85,6 +86,7 @@ def publish(client, pubsub_topic, data_line, msg_attributes=None):
     resp = client.projects().topics().publish(
         topic=pubsub_topic, body=body).execute(num_retries=NUM_RETRIES)
     return resp
+# [END publish]
 
 def create_timestamp(hms,dmy):
     """Format two time/date columns as a datetime object"""
@@ -127,6 +129,7 @@ def main(argv):
             myfile = os.path.join(subdir,file)
             print myfile
             line_count = 0
+            # [START processcsv]
             with open(myfile) as data_file:
                 reader = csv.reader(data_file)
                 for line in reader:
@@ -146,6 +149,7 @@ def main(argv):
                         print "Vehicle ID: {0}, location: {1}, {2}; speed: {3} mph, bearing: {4} degrees".format(vehicleID, latitude,longitude, line[7], line[8])
                         proc_line =  "{0}, {1}, {2}, {3} ,{4} ".format(vehicleID, latitude,longitude, line[7], line[8])
                         publish(client, pubsub_topic, proc_line, msg_attributes)
+            # [END processcsv]
 
 if __name__ == '__main__':
         main(sys.argv)
