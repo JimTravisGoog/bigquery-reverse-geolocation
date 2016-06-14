@@ -1,4 +1,4 @@
-
+# [START setup]
 env:
 # Change to your project ID
     PROJECT_ID: 'your-project-id'
@@ -14,3 +14,4 @@ env:
     SUBSCRIPTION: 'projects/your-project-id/subscriptions/mysubscription'
 # Change to your Google Maps API Key, see https://developers.google.com/maps/web-services/
     MAPS_API_KEY: 'Your-server-key'
+# [END setup]
