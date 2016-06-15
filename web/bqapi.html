@@ -44,6 +44,7 @@ function initialize(){
 //BigQuery authorization. Table being queried must be shared with logged in user.
 
 //check if the user is authorised.
+// [START bqauth]
 function authorise(event) {
   gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
   return false;
@@ -67,6 +68,7 @@ function loadApi(){
     }
   );
 }
+// [END bqauth]
 
 //create a map object with default zoom and center
 function createMap(){
@@ -96,21 +98,27 @@ function setUpDrawingTools(){
       }
   });
   drawingManager.setMap(map);
-
+  
   //handle the event triggered when a shape is drawn
+  // [START addlistener]
   google.maps.event.addListener(drawingManager, 'rectanglecomplete', function (rectangle) {
     currentShape = rectangle;
     rectangleQuery(rectangle.getBounds());
   });
+  // [END addlistener]
 }
 
+
 //send a query for all data within a rectangular area
+// [START rectquery]
 function rectangleQuery(latLngBounds){
   var queryString = rectangleSQL(latLngBounds.getNorthEast(), latLngBounds.getSouthWest());
   sendQuery(queryString);
 }
+// [END rectquery]
 
 //Send a query to BigQuery via the REST API
+// [START sendquery]
 function sendQuery(queryString){
   var request = gapi.client.bigquery.jobs.query({
       "query": queryString,
@@ -123,7 +131,9 @@ function sendQuery(queryString){
       checkJobStatus(response.jobReference.jobId);
   });
 }
+// [END sendquery]
 
+// [START rectsql]
 //construct the SQL for a rectangle query
 function rectangleSQL(ne, sw){
   var queryString = "SELECT Latitude, Longitude "
@@ -135,11 +145,12 @@ function rectangleSQL(ne, sw){
   queryString += " LIMIT " + recordLimit;
   return queryString;
 }
-
+// [END rectsql]
 
 
 //BigQuery utilities
 //poll a job to check its status
+// [START checkjob]
 function checkJobStatus(jobId){
   var request = gapi.client.bigquery.jobs.get({
     "projectId": projectId,
@@ -161,8 +172,10 @@ function checkJobStatus(jobId){
     }
   });
 }
+// [END checkjob]
 
 //when a job is complete, get the results
+// [START getresults]
 function getQueryResults(jobId){
   var request = gapi.client.bigquery.jobs.getQueryResults({
     "projectId": projectId,
@@ -173,9 +186,11 @@ function getQueryResults(jobId){
     doHeatMap(response.result.rows);
   })
 }
+// [END getresults]
 
 //Map utilties
 //display selected rows as a heatmap
+// [START doheatmap]
 function doHeatMap(rows){
   //remove the user drawing
   if(currentShape){
@@ -198,6 +213,7 @@ function doHeatMap(rows){
     heatmap.setMap(map);
   }
 }
+// [END doheatmap]
 
 //run init function when window loaded
 google.maps.event.addDomListener(window, 'load', initialize);
