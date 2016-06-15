@@ -134,7 +134,7 @@ def main(argv):
                 reader = csv.reader(data_file)
                 for line in reader:
                     line_count += 1
- #                   print "%s lines processed" % line_count
+                    # print "%s lines processed" % line_count
                     if line_count > 1:
                         #Convert NMEA GPS format to decimal degrees
                         #see http://www.gpsinformation.org/dale/nmea.htm#position for NMEA GPS format details
