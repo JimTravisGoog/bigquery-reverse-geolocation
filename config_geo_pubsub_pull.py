@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
- This script reverse geocodes mesages pulled from a pub/sub queue (converts latitude & longitude to a street address),
+ This script reverse geocodes mesages pulled from a Google Cloud Pub/Sub queue (converts latitude & longitude to a street address),
  calculates the elevation above sea level,
- and converts from UTC time to local time by querying which timezone the locations fall in
- It then writes the data plus this added geographic context to the BigQuery table
+ and converts from UTC time to local time by querying which timezone the locations fall in.
+ It then writes the data plus this added geographic context to the BigQuery table.
 """
 import sys
 import base64
@@ -37,7 +37,8 @@ from oauth2client import client as oauth2client
 with open("resources/setup.yaml", 'r') as  varfile:
     cfg = yaml.load(varfile)
 
-# default; set to your traffic topic. Can override on command line.
+# Uses an environment variable by default. Change this value to the name of your traffic topic.
+# Can override on the command line.
 TRAFFIC_TOPIC = cfg["env"]["PUBSUB_TOPIC"]
 PUBSUB_SCOPES = ['https://www.googleapis.com/auth/pubsub']
 running_proc = True
@@ -66,8 +67,8 @@ def create_bigquery_client():
 
 def stream_row_to_bigquery(bigquery, row,
                            num_retries=5):
-    # Generate a unique row id so retries
-    # don't accidentally duplicate insert
+    # Generate a unique row ID so retries
+    # don't accidentally insert duplicates.
     insert_all_data = {
         'insertId': str(uuid.uuid4()),
         'rows': [{'json': row}]
@@ -78,18 +79,18 @@ def stream_row_to_bigquery(bigquery, row,
         tableId=cfg["env"]["TABLE_ID"],
         body=insert_all_data).execute(num_retries=num_retries)
 
-#Use Maps API Geocoding service to convert lat,lng into a human readable address
+# Use Maps API Geocoding service to convert lat,lng into a human readable address.
 def reverse_geocode(gmaps, latitude, longitude):
     return gmaps.reverse_geocode((latitude, longitude))
 
-#extract a named property e.g. formatted_address from the Geocoding API response.
+# Extract a named property, e.g. formatted_address, from the Geocoding API response.
 def extract_address(list, property):
     address = ""
     if(list[0] is not None):
         address = list[0][property]
     return address
 
-#extract a structured address component e.g. postal_code from a Geocoding API response
+# Extract a structured address component, e.g. postal_code, from a Geocoding API response.
 def extract_component(list, property):
     val = ""
     for address in list:
@@ -99,7 +100,7 @@ def extract_component(list, property):
                 break
     return val
 
-#calculate elevation using Google Maps Elevation API
+# Calculate elevation using Google Maps Elevation API.
 def get_elevation(gmaps, latitude, longitude):
     elevation = gmaps.elevation((latitude, longitude))
     elevation_metres = None
@@ -107,7 +108,7 @@ def get_elevation(gmaps, latitude, longitude):
         elevation_metres = elevation[0]["elevation"]
     return elevation_metres
 
-#get the timezone including any DST offset for the time the GPS position was recorded
+# Get the timezone including any DST offset for the time the GPS position was recorded.
 def get_timezone(gmaps, latitude, longitude, posix_time):
     return gmaps.timezone((latitude, longitude), timestamp=posix_time)
 
@@ -128,21 +129,21 @@ def main(argv):
     # You can fetch multiple messages with a single API call.
     batch_size = 100
 
-    # options to limit number of geocodes e.g to stay under daily quota.
+    # Options to limit number of geocodes e.g to stay under daily quota.
     geocode_counter = 0
     geocode_limit = 10
 
-    # option to wait for some time until daily quotas are reset
+    # Option to wait for some time until daily quotas are reset.
     wait_timeout = 2
 # [END maininit]    
 # [START createmaps]
-    #create a Google Maps API client
+    # Create a Google Maps API client.
     gmaps = googlemaps.Client(key=cfg["env"]["MAPS_API_KEY"])
     subscription = cfg["env"]["SUBSCRIPTION"]
 
-    # Create a POST body for the Pub/Sub request
+    # Create a POST body for the Cloud Pub/Sub request.
     body = {
-        # Setting ReturnImmediately to false instructs the API to wait
+        # Setting ReturnImmediately to False instructs the API to wait
         # to collect the message up to the size of MaxEvents, or until
         # the timeout.
         'returnImmediately': False,
@@ -152,7 +153,7 @@ def main(argv):
     signal.signal(signal.SIGINT, signal_term_handler)
     #[START pullmsgs]
     while running_proc:
-        #pull messages from Pubsub
+        # Pull messages from Cloud Pub/Sub
         resp = client.projects().subscriptions().pull(
             subscription=subscription, body=body).execute()
 
@@ -166,49 +167,49 @@ def main(argv):
             for received_message in received_messages:
                 pubsub_message = received_message.get('message')
                 if pubsub_message:
-                    # Process messages
+                    # process messages
                     msg = base64.b64decode(str(pubsub_message.get('data')))
 
-                    #we stored time as a message attribute
+                    # We stored time as a message attribute.
                     ts = pubsub_message["attributes"]["timestamp"]
 
-                    # create a datetime object so we can get a POSIX timestamp for TimeZone API
+                    # Create a datetime object so we can get a POSIX timestamp for TimeZone API.
                     utc_time = datetime.datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
                     posix_time = time.mktime(utc_time.timetuple())
 
-                    #our messages are in a comma-separated string.
+                    # Our messages are in a comma-separated string.
                     #Split into a list
                     data_list = msg.split(",")
                     #[START extract]
-                    #extract latitude,longitude for input into Google Maps API calls
+                    # Extract latitude,longitude for input into Google Maps API calls.
                     latitude = float(data_list[1])
                     longitude = float(data_list[2])
 
-                    #Contruct a row object that matches the BigQuery table schema
+                    # Construct a row object that matches the BigQuery table schema.
                     row = { 'VehicleID': data_list[0], 'UTCTime': None, 'Offset': 0, 'Address':"", 'Zipcode':"", 'Speed':data_list[3], 'Bearing':data_list[4], 'Elevation':None, 'Latitude':latitude, 'Longitude': longitude }
 
-                    #Maps API Geocoding has a daily limit - this lets us limit API calls during development.
+                    # Maps API Geocoding has a daily limit - this lets us limit API calls during development.
                     if geocode_counter <= geocode_limit:
 
-                        #Reverse Geocode the latitude, longitude to get street address, city, region etc
+                        # Reverse geocode the latitude, longitude to get street address, city, region, etc.
                         address_list = reverse_geocode(gmaps, latitude, longitude)
                     # [END extract]
-                        #Save the formatted address for insert into BigQuery
+                        #Save the formatted address for insert into BigQuery.
                         if(len(address_list) > 0):
                             row["Address"] = extract_address(address_list, "formatted_address")
                             #extract the zip or postal code if one is returned
                             row["Zipcode"] = extract_component(address_list, "postal_code")
 
-                        #increment counter - in case you want to limit daily geocodes.
+                        # Increment counter - in case you want to limit daily geocodes.
                         geocode_counter += 1
 
                         # get elevation
                         row["Elevation"] = get_elevation(gmaps, latitude, longitude)
 
-                        # get the timezone, pass in original timestamp in case DST applied at that time
+                        # Get the timezone, pass in original timestamp in case DST applied at that time.
                         timezone = get_timezone(gmaps, latitude, longitude, posix_time)
 
-                        #Store DST offset so can display/query UTC time as local time
+                        # Store DST offset so can display/query UTC time as local time.
                         if(timezone["rawOffset"] is not None):
                             row["Offset"] = get_local_time(timezone)
 
@@ -218,8 +219,8 @@ def main(argv):
                         result = stream_row_to_bigquery(bq, row)
                         # [END saverow]
 
-                        #Addresses can contain non-ascii characters, for simplicity we'll replace non ascii characters
-                        #This is just for command line output
+                        # Addresses can contain non-ascii characters, for simplicity we'll replace non ascii characters.
+                        # This is just for command line output.
                         addr = row['Address'].encode('ascii', 'replace')
                         msg = "Appended one row to BigQuery."
                         print msg
@@ -235,10 +236,10 @@ def main(argv):
                         geocode_counter = 0
                         print "counter reset"
 
-                    # Get the message's ack ID
+                    # Get the message's ack ID.
                     ack_ids.append(received_message.get('ackId'))
 
-            # Create a POST body for the acknowledge request
+            # Create a POST body for the acknowledge request.
             ack_body = {'ackIds': ack_ids}
 
             # Acknowledge the message.
