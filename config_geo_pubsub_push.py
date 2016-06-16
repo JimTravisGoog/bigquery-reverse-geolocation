@@ -14,14 +14,16 @@
 # limitations under the License.
 
 """
-This script reads traffic sensor data from a set of csv files,  adding vehicle id, geo encodes the files  and publishes that data
-to PubSub.  If you run it on a GCE instance, this instance must be
+This script reads traffic sensor data from a set of CSV files,
+adds vehicle IDs, geoencodes the files  and publishes that data
+to Cloud Pub/Sub. If you run it on a GCE instance, this instance must be
 created with the "Cloud Platform" Project Access enabled. Click on
 "Show advanced options" when creating the image to find this setting.
 
-Before you run the script, create one PubSub topic, in the same project as the
-GCE instance you will run on, to publish to. Edit the TRAFFIC_TOPIC or you can
-pass in the names as a command-line argument.
+Before you run the script, create one Cloud Pub/Sub topic to publish to
+in the same project that the
+GCE instance you will run on. Edit TRAFFIC_TOPIC or you can
+pass in the topic name as a command-line argument.
 
 Before you run this script, download some demo  data files (~2GB):
 curl -O \
@@ -34,7 +36,7 @@ http://storage.googleapis.com/aju-sd-traffic/freeway_detector_config/Freeways-Me
 
 Usage:
 
-Run the script passing in the location of the folder that contains the csv files
+Run the script passing in the location of the folder that contains the CSV files.
 % python geo_pubsub.py --fileloc 'your_folder_location'
 Run 'python traffic_pubsub_generator.py -h' for more information.
 """
@@ -58,7 +60,8 @@ from oauth2client import client as oauth2client
 with open("resources/setup.yaml", 'r') as  varfile:
     cfg = yaml.load(varfile)
 
-# default; set to your traffic topic. Can override on command line.
+# Defaults to an environment variable.
+# Change to your traffic topic name. Can override on command line.
 TRAFFIC_TOPIC = cfg["env"]["PUBSUB_TOPIC"]
 PUBSUB_SCOPES = ['https://www.googleapis.com/auth/pubsub']
 NUM_RETRIES = 3
@@ -93,11 +96,11 @@ def create_timestamp(hms,dmy):
     h = int(hms[0:2])
     m = int(hms[2:4])
     s = int(hms[4:6])
-    #print "{0} {1} {2}".format(h,m,s)
+
     d= int(dmy[0:2])
     m = int(dmy[2:4])
     y = int(dmy[4:6]) + 2000
-    #print "{0} {1} {2}".format(d,m,y)
+
     return (str(datetime.datetime(y,m,d,h,m,s)))
 
 
@@ -122,7 +125,7 @@ def main(argv):
 
     for subdir, dirs, files in os.walk(rootdir):
         for file in files:
-            #San Diego data file names include trip ID, use this to identify each journey
+            # San Diego data file names include trip ID, so use this to identify each journey.
             name_ext = file.split(".")
             vehicleID = name_ext[0][15:]
 
@@ -134,10 +137,10 @@ def main(argv):
                 reader = csv.reader(data_file)
                 for line in reader:
                     line_count += 1
-                    # print "%s lines processed" % line_count
+
                     if line_count > 1:
-                        #Convert NMEA GPS format to decimal degrees
-                        #see http://www.gpsinformation.org/dale/nmea.htm#position for NMEA GPS format details
+                        # Convert NMEA GPS format to decimal degrees.
+                        # See http://www.gpsinformation.org/dale/nmea.htm#position for NMEA GPS format details.
                         lat = float(line[3][0:2])
                         lng = float(line[5][0:3])
                         lng_minutes = float(line[5][3:])/60
